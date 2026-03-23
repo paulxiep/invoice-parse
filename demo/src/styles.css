@@ -1,0 +1,471 @@
+/*
+ * Theme matching paulxie.com (Bear Blog base + Atkinson font).
+ * CSS variables and base styles copied from paulxie global.css.
+ */
+
+:root {
+  --accent: #2337ff;
+  --accent-dark: #000d8a;
+  --black: 15, 18, 25;
+  --gray: 96, 115, 159;
+  --gray-light: 229, 233, 240;
+  --gray-dark: 34, 41, 57;
+  --gray-gradient: rgba(var(--gray-light), 50%), #fff;
+  --box-shadow:
+    0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
+    0 16px 32px rgba(var(--gray), 33%);
+}
+
+@font-face {
+  font-family: "Atkinson";
+  src: url("/invoice-parse/fonts/atkinson-regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson";
+  src: url("/invoice-parse/fonts/atkinson-bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Atkinson", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(var(--gray-gradient)) no-repeat;
+  background-size: 100% 600px;
+  color: rgb(var(--gray-dark));
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+/* --- Header bar (matches paulxie) --- */
+
+header {
+  margin: 0;
+  padding: 0 1em;
+  background: white;
+  box-shadow: 0 2px 8px rgba(var(--black), 5%);
+}
+
+header nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+header nav a {
+  padding: 1em 0.5em;
+  color: rgb(var(--black));
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9em;
+}
+
+header nav a:hover {
+  color: var(--accent);
+}
+
+/* --- Main content --- */
+
+main {
+  width: 960px;
+  max-width: calc(100% - 2em);
+  margin: 0 auto;
+  padding: 2em 1em;
+}
+
+h1 {
+  font-size: 2.4em;
+  color: rgb(var(--black));
+  line-height: 1.2;
+  margin: 0 0 0.25em;
+}
+
+.subtitle {
+  color: rgb(var(--gray));
+  margin: 0 0 2em;
+  font-size: 1em;
+}
+
+/* --- Card --- */
+
+.card {
+  background: white;
+  border: 1px solid rgb(var(--gray-light));
+  border-radius: 8px;
+  padding: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+.card h2 {
+  font-size: 1.25em;
+  margin: 0 0 0.75em;
+  color: rgb(var(--black));
+}
+
+/* --- API Key Input --- */
+
+.api-key-section {
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.api-key-section input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5em 0.75em;
+  border: 1px solid rgb(var(--gray-light));
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-family: inherit;
+}
+
+.api-key-section input:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
+}
+
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  color: rgb(var(--gray));
+  font-size: 0.8em;
+}
+
+.trust-badge svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+/* --- File Upload Zone --- */
+
+.upload-zone {
+  display: block;
+  border: 2px dashed rgb(var(--gray-light));
+  border-radius: 8px;
+  padding: 2em;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  color: rgb(var(--gray));
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(var(--gray-light), 0.3);
+}
+
+.upload-zone.has-file {
+  border-color: var(--accent);
+  border-style: solid;
+  color: rgb(var(--gray-dark));
+}
+
+.upload-zone input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.upload-zone .icon {
+  font-size: 2em;
+  margin-bottom: 0.25em;
+}
+
+.upload-zone .filename {
+  font-weight: 700;
+  color: rgb(var(--black));
+}
+
+/* --- Progress --- */
+
+.progress-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: 0.4em 0;
+  font-size: 0.9em;
+  color: rgb(var(--gray));
+}
+
+.progress-step.active {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.progress-step.done {
+  color: rgb(var(--gray-dark));
+}
+
+.progress-step .indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--gray-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+  flex-shrink: 0;
+}
+
+.progress-step.active .indicator {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.progress-step.done .indicator {
+  border-color: #22c55e;
+  background: #22c55e;
+  color: white;
+}
+
+.progress-step .timing {
+  margin-left: auto;
+  font-size: 0.8em;
+  color: rgb(var(--gray));
+  font-weight: 400;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgb(var(--gray-light));
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* --- Run Button --- */
+
+.run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.6em 1.5em;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1em;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.run-btn:hover {
+  background: var(--accent-dark);
+}
+
+.run-btn:disabled {
+  background: rgb(var(--gray-light));
+  color: rgb(var(--gray));
+  cursor: not-allowed;
+}
+
+/* --- Results --- */
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+}
+
+@media (max-width: 720px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field-label {
+  font-weight: 700;
+  color: rgb(var(--gray));
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.field-value {
+  color: rgb(var(--black));
+  margin-bottom: 0.75em;
+}
+
+/* --- Line items table --- */
+
+.line-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+  margin-top: 0.5em;
+}
+
+.line-items-table th {
+  text-align: left;
+  padding: 0.5em 0.75em;
+  border-bottom: 2px solid rgb(var(--gray-light));
+  color: rgb(var(--gray));
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.line-items-table td {
+  padding: 0.4em 0.75em;
+  border-bottom: 1px solid rgb(var(--gray-light));
+}
+
+.line-items-table .section-header {
+  background: rgb(var(--gray-light));
+  font-weight: 700;
+  color: rgb(var(--gray-dark));
+}
+
+.line-items-table .monetary {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Validation --- */
+
+.validation-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.85em;
+}
+
+.check-pass {
+  color: #22c55e;
+}
+
+.check-fail {
+  color: #ef4444;
+}
+
+.check-skip {
+  color: rgb(var(--gray));
+}
+
+.confidence-score {
+  font-size: 2em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.confidence-high { color: #22c55e; }
+.confidence-medium { color: #f59e0b; }
+.confidence-low { color: #ef4444; }
+
+/* --- Download Button --- */
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.75em 2em;
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1em;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+
+.download-btn:hover {
+  background: #16a34a;
+}
+
+/* --- Error --- */
+
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 1em;
+  border-radius: 8px;
+  font-size: 0.9em;
+}
+
+/* --- OCR debug --- */
+
+.ocr-debug {
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgb(var(--gray-light));
+  padding: 1em;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.75em;
+  white-space: pre-wrap;
+  color: rgb(var(--gray-dark));
+}
+
+.collapsible-header {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  color: rgb(var(--gray));
+  font-size: 0.85em;
+}
+
+.collapsible-header:hover {
+  color: var(--accent);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* --- Footer --- */
+
+footer {
+  text-align: center;
+  padding: 2em 1em;
+  color: rgb(var(--gray));
+  font-size: 0.8em;
+}
+
+footer a {
+  color: var(--accent);
+}

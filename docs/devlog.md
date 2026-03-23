@@ -235,3 +235,80 @@ PaddleOCR downloads ~12 models on first inference (~500MB). Added `model-init` s
 | 337MB Docker build context (included .venv, target/) | Added `.dockerignore` |
 | `GEMINI_API_KEY` warning from compose variable substitution | Switched to `env_file: ../.env` |
 | Distroless `nonroot` can't write to named volumes | Use root distroless for one-shot CLI services |
+
+---
+
+## Session 4: Client-Side Demo (GitHub Pages)
+
+### Goal
+Interactive demo at `paulxiep.github.io/invoice-parse/` — full pipeline runs client-side in the browser. User uploads invoice (PDF/image), enters Gemini API key, sees extraction results on-page + downloads .xlsx.
+
+### Architecture
+
+Standalone Vite + TypeScript SPA in `demo/`, deployed via GitHub Actions to this repo's GH Pages. The paulxie.com portfolio site embeds it.
+
+```
+[Upload PDF/Image]
+  → pdfjs-dist (PDF→canvas @ 300 DPI) or createImageBitmap (images)
+  → paddleocr npm + ONNX Runtime Web (CDN) — PP-OCRv5 mobile det + English rec
+  → SpatialClusterExtractor (TS port) → build extraction prompt (TS port)
+  → Gemini API via @google/genai SDK (user's API key, sessionStorage)
+  → Validation (TS port) + confidence scoring
+  → wasm-xlsxwriter (CDN) → .xlsx download
+  → Results displayed on-page (header card, line items table, validation)
+```
+
+### Technology choices
+
+| Component | Library | Why |
+|-----------|---------|-----|
+| PDF → Image | pdfjs-dist | Gold standard, used by Firefox |
+| OCR | paddleocr (npm) + onnxruntime-web (CDN) | PP-OCRv5 English models via ONNX, client-side |
+| Table extraction | TS port of SpatialClusterExtractor | Pure math, ~80 lines |
+| LLM extraction | @google/genai SDK | Gemini structured JSON output, fallback models |
+| Validation | TS port of validation.py | Pure arithmetic |
+| Excel gen | wasm-xlsxwriter (CDN) | Same Rust lib as production output service |
+| Build | Vite | Fast dev, tree-shaking, GH Pages deploy |
+| Theme | paulxie.com CSS vars + Atkinson font | Visual consistency with portfolio |
+
+### Code ported from production pipeline
+
+| Source | Target | Notes |
+|--------|--------|-------|
+| `models.py` | `demo/src/lib/types.ts` | TS interfaces + JSON schema for Gemini |
+| `extraction.py` | `demo/src/lib/prompt-builder.ts` | Exact SYSTEM_PROMPT + prompt builder |
+| `table_extract.py` | `demo/src/lib/table-extract.ts` | SpatialClusterExtractor only |
+| `validation.py` | `demo/src/lib/validation.ts` | All checks + confidence scoring |
+| `excel_gen.rs` | `demo/src/lib/excel-gen.ts` | Section-aware columns via wasm-xlsxwriter |
+| `ocr.py` | `demo/src/lib/ocr.ts` | RawOcrOutput structure mapping |
+
+### Issues and fixes
+
+| Issue | Fix |
+|-------|-----|
+| `wasm-xlsxwriter` npm package uses `__dirname` (Node.js) at import time | Vite alias to `web/` build initially, then switched to dynamic CDN import with explicit `initWasm()` |
+| `onnxruntime-web` WASM binary not found by Vite bundler | Load via CDN `<script type="module">` tag in index.html, expose as `window.ort` |
+| ONNX Runtime `initWasm()` fails — "failed to match magic number" | WASM file served as HTML. Fixed by loading entire onnxruntime-web from jsDelivr CDN |
+| paddleocr.js default assets use Chinese rec model + Chinese dict | Switched to English rec model + English dict from `monkt/paddleocr-onnx` on HuggingFace |
+| OCR output off-by-one ("INVOICE" → "JOWPJDF") | English dict lacks blank token at index 0 (Chinese dict has it). Prepend `" "` to dict array for CTC decoder alignment |
+| Browser Cache API caching stale models across code changes | Versioned cache keys (`paddleocr-models-v1` → `v5`) to bust cache on model URL changes |
+| `<label>` upload zone missing `display: block` | Added CSS rule; native `<label for>` handles click-to-browse without JS |
+| Gemini overload errors | Fallback model chain: `gemini-3.1-flash-lite-preview` → `gemini-3-flash-preview` |
+
+### Model configuration
+
+| Model | Source | Size | Notes |
+|-------|--------|------|-------|
+| PP-OCRv5 mobile det | paddleocr.js GitHub assets | ~4.6 MB | Same det model works for all languages |
+| English PP-OCRv5 rec | `monkt/paddleocr-onnx` on HuggingFace | ~7.5 MB | English-specific recognition |
+| English dict | `monkt/paddleocr-onnx` on HuggingFace | ~4 KB | 436 characters, needs blank prepended for CTC |
+
+Models cached via Browser Cache API after first download.
+
+### GH Pages deployment
+
+GitHub Actions workflow at `.github/workflows/pages.yml`:
+- Triggers on push to `demo/` on main
+- Node 24, `npm ci && npm run build` in `demo/`
+- Deploys `demo/dist/` via `actions/deploy-pages`
+- Requires repo Settings → Pages → Source → GitHub Actions

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Parser Demo</title>
+    <meta name="description" content="Client-side invoice parsing: upload a PDF or image, extract structured data with OCR + Gemini, download as Excel." />
+    <script type="module">
+      import * as ort from "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/ort.all.bundle.min.mjs";
+      ort.env.wasm.numThreads = 1;
+      window.ort = ort;
+      window.dispatchEvent(new Event("ort-ready"));
+    </script>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="https://paulxie.com">paulxie.com</a>
+        <div>
+          <a href="https://paulxie.com/projects">Projects</a>
+          <a href="https://github.com/paulxiep/invoice-parse" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <h1>Invoice Parser</h1>
+      <p class="subtitle">
+        Upload an invoice (PDF or image). OCR runs in your browser via PaddleOCR,
+        then Gemini extracts structured data. Download the result as Excel.
+      </p>
+
+      <!-- API Key -->
+      <div class="card" id="card-apikey">
+        <h2>Gemini API Key</h2>
+        <div class="api-key-section">
+          <input
+            type="password"
+            id="api-key-input"
+            placeholder="Paste your Gemini API key"
+            autocomplete="off"
+          />
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+            Your key never leaves this browser
+          </div>
+        </div>
+      </div>
+
+      <!-- File Upload -->
+      <div class="card" id="card-upload">
+        <h2>Upload Invoice</h2>
+        <label class="upload-zone" id="upload-zone" for="file-input">
+          <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.webp,.tiff,.bmp" />
+          <div class="icon">&#128196;</div>
+          <div id="upload-label">Drop a file here or click to browse</div>
+          <div style="font-size: 0.8em; margin-top: 0.25em;">PDF, PNG, JPG, WEBP</div>
+        </label>
+      </div>
+
+      <!-- Run Button -->
+      <div style="margin-bottom: 1.5em;">
+        <button class="run-btn" id="run-btn" disabled>
+          Extract Invoice
+        </button>
+      </div>
+
+      <!-- Progress -->
+      <div class="card hidden" id="card-progress">
+        <h2>Processing</h2>
+        <div class="progress-steps" id="progress-steps"></div>
+      </div>
+
+      <!-- Error -->
+      <div class="error-message hidden" id="error-message"></div>
+
+      <!-- Results -->
+      <div class="hidden" id="results-section">
+        <!-- Download -->
+        <div class="card" style="text-align: center;">
+          <a class="download-btn" id="download-btn" download="invoice.xlsx">
+            &#11015; Download Excel
+          </a>
+        </div>
+
+        <!-- Extraction Results -->
+        <div class="card">
+          <h2>Extraction Results</h2>
+          <div class="results-grid" id="results-grid"></div>
+        </div>
+
+        <!-- Line Items -->
+        <div class="card">
+          <h2>Line Items</h2>
+          <div style="overflow-x: auto;">
+            <table class="line-items-table" id="line-items-table"></table>
+          </div>
+        </div>
+
+        <!-- Validation -->
+        <div class="card">
+          <div class="results-grid">
+            <div>
+              <h2>Validation</h2>
+              <div class="validation-checks" id="validation-checks"></div>
+            </div>
+            <div style="text-align: center;">
+              <div class="field-label">Confidence</div>
+              <div class="confidence-score" id="confidence-score"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OCR Debug -->
+        <div class="card">
+          <div class="collapsible-header" id="ocr-toggle">
+            &#9654; Raw OCR Text
+          </div>
+          <div class="ocr-debug hidden" id="ocr-debug"></div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <a href="https://github.com/paulxiep/invoice-parse">invoice-parse</a> &mdash;
+      OCR by <a href="https://github.com/PaddlePaddle/PaddleOCR" target="_blank">PaddleOCR</a>,
+      extraction by <a href="https://ai.google.dev/" target="_blank">Gemini</a>.
+      Runs entirely in your browser.
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

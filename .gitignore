@@ -4,3 +4,5 @@ target/
 invoices/
 *.pyc
 output/
+node_modules/
+demo/dist/
