@@ -1,0 +1,6 @@
+.env
+.venv
+target/
+invoices/
+*.pyc
+output/
