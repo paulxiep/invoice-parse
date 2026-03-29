@@ -2,6 +2,7 @@
  * Pipeline orchestrator — chains all steps with progress callbacks.
  */
 
+import type { AuthCredential } from "./auth";
 import type {
   InvoiceExtraction,
   PipelineProgress,
@@ -26,7 +27,7 @@ function formatOcrText(ocr: RawOcrOutput): string {
 export async function runPipeline(
   fileBytes: Uint8Array,
   filename: string,
-  apiKey: string,
+  credential: AuthCredential,
   onProgress: ProgressCallback,
 ): Promise<PipelineResult> {
   const t0 = performance.now();
@@ -66,7 +67,7 @@ export async function runPipeline(
   onProgress({ step: "llm_extract", message: "Sending to Gemini for extraction..." });
   let extraction: InvoiceExtraction;
   try {
-    extraction = await extractWithGemini(apiKey, rawOcr, tableExtraction, (msg) => {
+    extraction = await extractWithGemini(credential, rawOcr, tableExtraction, (msg) => {
       onProgress({ step: "llm_extract", message: msg });
     });
   } catch (err) {

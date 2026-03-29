@@ -7,12 +7,32 @@
 import "./styles.css";
 import { runPipeline } from "./lib/pipeline";
 import { initOcr } from "./lib/ocr";
+import {
+  initOAuth,
+  requestOAuthToken,
+  revokeOAuth,
+  setApiKey,
+  getCredential,
+  isAuthenticated,
+} from "./lib/auth";
 import type { PipelineProgress, PipelineResult, InvoiceExtraction, ValidationResult } from "./lib/types";
+
+// Set via VITE_GOOGLE_CLIENT_ID env var at build time (or .env.local file)
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";
 
 // Preload OCR models on page load
 initOcr().catch(() => {});
 
 // --- DOM references ---
+const tabOAuth = document.getElementById("tab-oauth") as HTMLButtonElement;
+const tabApiKey = document.getElementById("tab-apikey") as HTMLButtonElement;
+const panelOAuth = document.getElementById("panel-oauth") as HTMLDivElement;
+const panelApiKey = document.getElementById("panel-apikey") as HTMLDivElement;
+const googleSigninBtn = document.getElementById("google-signin-btn") as HTMLButtonElement;
+const userInfo = document.getElementById("user-info") as HTMLDivElement;
+const userEmail = document.getElementById("user-email") as HTMLSpanElement;
+const signoutLink = document.getElementById("signout-link") as HTMLAnchorElement;
+const oauthError = document.getElementById("oauth-error") as HTMLDivElement;
 const apiKeyInput = document.getElementById("api-key-input") as HTMLInputElement;
 const uploadZone = document.getElementById("upload-zone") as HTMLDivElement;
 const fileInput = document.getElementById("file-input") as HTMLInputElement;
@@ -33,14 +53,67 @@ const ocrDebug = document.getElementById("ocr-debug") as HTMLDivElement;
 // --- State ---
 let selectedFile: File | null = null;
 
+// --- Auth tab switching ---
+function switchTab(mode: "oauth" | "apikey") {
+  const isOAuth = mode === "oauth";
+  tabOAuth.classList.toggle("active", isOAuth);
+  tabApiKey.classList.toggle("active", !isOAuth);
+  panelOAuth.classList.toggle("hidden", !isOAuth);
+  panelApiKey.classList.toggle("hidden", isOAuth);
+  sessionStorage.setItem("auth-tab", mode);
+  updateRunBtn();
+}
+
+tabOAuth.addEventListener("click", () => switchTab("oauth"));
+tabApiKey.addEventListener("click", () => switchTab("apikey"));
+
+// Restore last-used tab
+const savedTab = sessionStorage.getItem("auth-tab");
+if (savedTab === "apikey") switchTab("apikey");
+
+// --- OAuth init ---
+const oauthAvailable = initOAuth(GOOGLE_CLIENT_ID, (cred) => {
+  if (cred?.mode === "oauth") {
+    googleSigninBtn.classList.add("hidden");
+    userInfo.classList.remove("hidden");
+    userEmail.textContent = "Signed in with Google";
+    oauthError.classList.add("hidden");
+  } else {
+    googleSigninBtn.classList.remove("hidden");
+    userInfo.classList.add("hidden");
+  }
+  updateRunBtn();
+});
+
+// If GIS didn't load, default to API key tab
+if (!oauthAvailable) {
+  switchTab("apikey");
+  tabOAuth.disabled = true;
+  tabOAuth.title = "Google Sign-in unavailable (library blocked)";
+}
+
+googleSigninBtn.addEventListener("click", () => {
+  oauthError.classList.add("hidden");
+  requestOAuthToken();
+});
+
+signoutLink.addEventListener("click", (e) => {
+  e.preventDefault();
+  revokeOAuth();
+});
+
 // --- API Key persistence (sessionStorage) ---
 const storedKey = sessionStorage.getItem("gemini-api-key");
 if (storedKey) apiKeyInput.value = storedKey;
 
 apiKeyInput.addEventListener("input", () => {
   sessionStorage.setItem("gemini-api-key", apiKeyInput.value);
+  setApiKey(apiKeyInput.value.trim());
   updateRunBtn();
 });
+
+// Initialise API key credential if we have a stored key and start on API key tab
+if (storedKey) setApiKey(storedKey.trim());
 
 // --- File upload ---
 uploadZone.addEventListener("dragover", (e) => {
@@ -78,7 +151,7 @@ function selectFile(file: File) {
 }
 
 function updateRunBtn() {
-  runBtn.disabled = !selectedFile || !apiKeyInput.value.trim();
+  runBtn.disabled = !selectedFile || !isAuthenticated();
 }
 
 // --- Progress rendering ---
@@ -270,7 +343,8 @@ ocrToggle.addEventListener("click", () => {
 
 // --- Run pipeline ---
 runBtn.addEventListener("click", async () => {
-  if (!selectedFile || !apiKeyInput.value.trim()) return;
+  const credential = getCredential();
+  if (!selectedFile || !credential) return;
 
   // Reset UI
   runBtn.disabled = true;
@@ -284,7 +358,7 @@ runBtn.addEventListener("click", async () => {
     const result = await runPipeline(
       bytes,
       selectedFile.name,
-      apiKeyInput.value.trim(),
+      credential,
       (progress) => renderProgress(progress),
     );
     renderResults(result);

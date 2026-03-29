@@ -33,6 +33,8 @@ jobs:
 
       - name: Build
         working-directory: demo
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v4
