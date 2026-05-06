@@ -10,10 +10,24 @@
   --gray: 96, 115, 159;
   --gray-light: 229, 233, 240;
   --gray-dark: 34, 41, 57;
+  --surface: 255, 255, 255;
   --gray-gradient: rgba(var(--gray-light), 50%), #fff;
   --box-shadow:
     0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
     0 16px 32px rgba(var(--gray), 33%);
+}
+:root[data-theme="dark"] {
+  --accent: #7B8EFF;
+  --accent-dark: #A8B4FF;
+  --black: 200, 205, 216;
+  --gray: 136, 146, 168;
+  --gray-light: 30, 34, 48;
+  --gray-dark: 200, 205, 216;
+  --surface: 24, 27, 40;
+  --gray-gradient: rgba(var(--gray-light), 50%), #0d1018;
+  --box-shadow:
+    0 2px 6px rgba(0, 0, 0, 40%), 0 8px 24px rgba(0, 0, 0, 50%),
+    0 16px 32px rgba(0, 0, 0, 50%);
 }
 
 @font-face {
@@ -41,9 +55,13 @@ body {
   padding: 0;
   background: linear-gradient(var(--gray-gradient)) no-repeat;
   background-size: 100% 600px;
+  background-color: #fff;
   color: rgb(var(--gray-dark));
   font-size: 18px;
   line-height: 1.7;
+}
+:root[data-theme="dark"] body {
+  background-color: #0d1018;
 }
 
 /* --- Header bar (matches paulxie) --- */
@@ -51,7 +69,7 @@ body {
 header {
   margin: 0;
   padding: 0 1em;
-  background: white;
+  background: rgb(var(--surface));
   box-shadow: 0 2px 8px rgba(var(--black), 5%);
 }
 
@@ -100,7 +118,7 @@ h1 {
 /* --- Card --- */
 
 .card {
-  background: white;
+  background: rgb(var(--surface));
   border: 1px solid rgb(var(--gray-light));
   border-radius: 8px;
   padding: 1.5em;
@@ -163,7 +181,7 @@ h1 {
   align-items: center;
   gap: 0.75em;
   padding: 0.6em 1.25em;
-  background: white;
+  background: rgb(var(--surface));
   border: 1px solid rgb(var(--gray-light));
   border-radius: 6px;
   font-family: inherit;
@@ -213,6 +231,10 @@ h1 {
   padding: 0.5em 0.75em;
   border-radius: 4px;
 }
+:root[data-theme="dark"] .auth-error {
+  color: #fca5a5;
+  background: rgba(220, 38, 38, 0.15);
+}
 
 /* --- API Key Input --- */
 
@@ -223,6 +245,8 @@ h1 {
   border-radius: 6px;
   font-size: 0.9em;
   font-family: inherit;
+  background: rgb(var(--surface));
+  color: rgb(var(--gray-dark));
 }
 
 .auth-panel input[type="password"]:focus {
@@ -516,6 +540,11 @@ h1 {
   padding: 1em;
   border-radius: 8px;
   font-size: 0.9em;
+}
+:root[data-theme="dark"] .error-message {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #fca5a5;
 }
 
 /* --- OCR debug --- */
