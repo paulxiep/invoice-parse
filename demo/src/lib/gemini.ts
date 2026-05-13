@@ -10,7 +10,7 @@ import type { InvoiceExtraction, RawOcrOutput, TableExtractionOutput } from "./t
 import { invoiceExtractionJsonSchema } from "./types";
 import { SYSTEM_PROMPT, buildExtractionPrompt } from "./prompt-builder";
 
-const MODELS = ["gemini-3.1-flash-lite-preview", "gemini-3-flash-preview"];
+const MODELS = ["gemini-3.1-flash-lite", "gemini-3-flash-preview"];
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 // --- API-key path (SDK) ---
